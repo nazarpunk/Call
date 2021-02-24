@@ -1,0 +1,21 @@
+{
+  "name": "nazarpunk/Call",
+  "description": "Вызыватор mysql процедур",
+  "authors": [
+    {
+      "name": "https://github.com/nazarpunk",
+      "email": "nazarpunk@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.4.0"
+  },
+  "require-dev": {
+  },
+  "minimum-stability": "dev",
+  "autoload": {
+    "psr-4": {
+      "nazarpunk\\Call\\": "src/"
+    }
+  }
+}
