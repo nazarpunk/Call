@@ -1,6 +1,7 @@
 {
   "name": "nazarpunk/call",
   "description": "Вызыватор mysql процедур",
+  "license": "MIT",
   "authors": [
     {
       "name": "https://github.com/nazarpunk",
