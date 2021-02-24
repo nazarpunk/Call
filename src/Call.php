@@ -196,7 +196,12 @@ class Call {
 		$results = [];
 		while ($row = $result->fetch_assoc()) {
 			foreach ($row as $key => &$value) {
-				if (!array_key_exists($key, $fetch_fields) || ($options['null'] && is_null($value)) || !$options['type']) continue;
+				if (!array_key_exists($key, $fetch_fields)) continue;
+				if (!$options['type']) {
+					if ($options['null'] && is_null($value)) $value = '';
+					continue;
+				}
+
 				$field = $fetch_fields[$key];
 
 				switch ($field->type) {
