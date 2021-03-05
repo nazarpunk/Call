@@ -198,7 +198,7 @@ class Call {
 			foreach ($row as $key => &$value) {
 				if (!array_key_exists($key, $fetch_fields)) continue;
 				if (!$options['type']) {
-					if ($options['null'] && is_null($value)) $value = '';
+					if (!$options['null'] && is_null($value)) $value = '';
 					continue;
 				}
 
