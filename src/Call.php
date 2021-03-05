@@ -208,6 +208,7 @@ class Call {
 					/** @noinspection PhpMissingBreakStatementInspection */
 					case MYSQLI_TYPE_TINY:
 						if ($options['boolean'] && $field->length === 1) {
+							if ($options['null'] && is_null($value)) break;
 							settype($value, 'bool');
 							break;
 						}
@@ -216,6 +217,7 @@ class Call {
 					case MYSQLI_TYPE_LONGLONG:
 					case MYSQLI_TYPE_INT24:
 					case MYSQLI_TYPE_YEAR:
+						if ($options['null'] && is_null($value)) break;
 						settype($value, 'int');
 						break;
 					case MYSQLI_TYPE_JSON:
@@ -225,6 +227,7 @@ class Call {
 					case MYSQLI_TYPE_DOUBLE:
 					case MYSQLI_TYPE_DECIMAL:
 					case MYSQLI_TYPE_NEWDECIMAL:
+						if ($options['null'] && is_null($value)) break;
 						settype($value, 'float');
 						break;
 					case MYSQLI_TYPE_TINY_BLOB:
@@ -237,6 +240,7 @@ class Call {
 					case MYSQLI_TYPE_BIT:
 					case MYSQLI_TYPE_ENUM:
 					case MYSQLI_TYPE_SET:
+						if ($options['null'] && is_null($value)) break;
 						settype($value, 'string');
 						break;
 					case MYSQLI_TYPE_INTERVAL:
@@ -247,6 +251,7 @@ class Call {
 						break;
 					case MYSQLI_TYPE_TIMESTAMP:
 					case MYSQLI_TYPE_DATETIME:
+						if ($options['null'] && is_null($value)) break;
 						$value = new DateTime($value);
 						break;
 					case MYSQLI_TYPE_NULL:
