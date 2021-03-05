@@ -6,6 +6,8 @@
 
 `composer require "nazarpunk/call:^1.0"`
 
+[packagist.org](https://packagist.org/packages/nazarpunk/call)
+
 ## Соединение
 Соединения ленивыи и происходят в момент самого запроса.
 
