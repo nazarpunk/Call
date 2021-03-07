@@ -222,8 +222,7 @@ class Call {
 							break;
 						case MYSQLI_TYPE_LONGLONG:
 						case MYSQLI_TYPE_TINY:
-							if ($options['boolean'] && $field->length === 1) settype($value, 'bool');
-							else settype($value, 'int');
+							settype($value, $options['boolean'] && $field->length === 1 ? 'bool' : 'int');
 					}
 				} else {
 					switch ($field->type) {
