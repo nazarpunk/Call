@@ -208,61 +208,58 @@ class Call {
 					if (!$options['null'] && is_null($value)) $value = '';
 					continue;
 				}
+				if ($options['null'] && is_null($value)) continue;
 
 				$field = $fetch_fields[$key];
 
-				switch ($field->type) {
-					/** @noinspection PhpMissingBreakStatementInspection */
-					case MYSQLI_TYPE_TINY:
-						if ($options['boolean'] && $field->length === 1) {
-							if ($options['null'] && is_null($value)) break;
-							settype($value, 'bool');
+				if (MYSQLI_NUM_FLAG & $field->flags) {
+					switch ($field->type) {
+						case MYSQLI_TYPE_SHORT:
+						case MYSQLI_TYPE_LONG:
+						case MYSQLI_TYPE_INT24:
+						case MYSQLI_TYPE_YEAR:
+							settype($value, 'int');
 							break;
-						}
-					case MYSQLI_TYPE_SHORT:
-					case MYSQLI_TYPE_LONG:
-					case MYSQLI_TYPE_LONGLONG:
-					case MYSQLI_TYPE_INT24:
-					case MYSQLI_TYPE_YEAR:
-						if ($options['null'] && is_null($value)) break;
-						settype($value, 'int');
-						break;
-					case MYSQLI_TYPE_JSON:
-						$value = $value ? json_decode($value, JSON_OBJECT_AS_ARRAY) : [];
-						break;
-					case MYSQLI_TYPE_FLOAT:
-					case MYSQLI_TYPE_DOUBLE:
-					case MYSQLI_TYPE_DECIMAL:
-					case MYSQLI_TYPE_NEWDECIMAL:
-						if ($options['null'] && is_null($value)) break;
-						settype($value, 'float');
-						break;
-					case MYSQLI_TYPE_TINY_BLOB:
-					case MYSQLI_TYPE_MEDIUM_BLOB:
-					case MYSQLI_TYPE_LONG_BLOB:
-					case MYSQLI_TYPE_BLOB:
-					case MYSQLI_TYPE_VAR_STRING:
-					case MYSQLI_TYPE_CHAR:
-					case MYSQLI_TYPE_STRING:
-					case MYSQLI_TYPE_BIT:
-					case MYSQLI_TYPE_ENUM:
-					case MYSQLI_TYPE_SET:
-						if ($options['null'] && is_null($value)) break;
-						settype($value, 'string');
-						break;
-					case MYSQLI_TYPE_INTERVAL:
-					case MYSQLI_TYPE_GEOMETRY:
-					case MYSQLI_TYPE_TIME:
-					case MYSQLI_TYPE_DATE:
-					case MYSQLI_TYPE_NEWDATE:
-						break;
-					case MYSQLI_TYPE_TIMESTAMP:
-					case MYSQLI_TYPE_DATETIME:
-						if ($options['null'] && is_null($value)) break;
-						$value = new DateTime($value);
-						break;
-					case MYSQLI_TYPE_NULL:
-						throw new Exception('Null Finded');
+						case MYSQLI_TYPE_LONGLONG:
+						case MYSQLI_TYPE_TINY:
+							if ($options['boolean'] && $field->length === 1) settype($value, 'bool');
+							else settype($value, 'int');
+					}
+				} else {
+					switch ($field->type) {
+						case MYSQLI_TYPE_JSON:
+							$value = $value ? json_decode($value, JSON_OBJECT_AS_ARRAY) : [];
+							break;
+						case MYSQLI_TYPE_FLOAT:
+						case MYSQLI_TYPE_DOUBLE:
+						case MYSQLI_TYPE_DECIMAL:
+						case MYSQLI_TYPE_NEWDECIMAL:
+							settype($value, 'float');
+							break;
+						case MYSQLI_TYPE_TINY_BLOB:
+						case MYSQLI_TYPE_MEDIUM_BLOB:
+						case MYSQLI_TYPE_LONG_BLOB:
+						case MYSQLI_TYPE_BLOB:
+						case MYSQLI_TYPE_VAR_STRING:
+						case MYSQLI_TYPE_CHAR:
+						case MYSQLI_TYPE_STRING:
+						case MYSQLI_TYPE_BIT:
+						case MYSQLI_TYPE_ENUM:
+						case MYSQLI_TYPE_SET:
+							settype($value, 'string');
+							break;
+						case MYSQLI_TYPE_INTERVAL:
+						case MYSQLI_TYPE_GEOMETRY:
+						case MYSQLI_TYPE_TIME:
+						case MYSQLI_TYPE_DATE:
+						case MYSQLI_TYPE_NEWDATE:
+						case MYSQLI_TYPE_NULL:
+							break;
+						case MYSQLI_TYPE_TIMESTAMP:
+						case MYSQLI_TYPE_DATETIME:
+							$value = new DateTime($value);
+							break;
+					}
 				}
 			}
 			unset($value);

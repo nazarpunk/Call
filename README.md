@@ -72,7 +72,7 @@ call `my_procedure`();
 use nazarpunk\Call\Call;
 $call = new Call('my_procedure');
 
-$call->argument(3, 'c', 'raw')
+$call->argument(3, 'now()', 'raw')
 	     ->argument(2, 'b', 'quote')
 	     ->argument(1, 'a', 'escape');
 	     
@@ -80,7 +80,7 @@ $call->execute();
 ```
 
 ```mysql
-call `my_procedure`('a', 'b', c);
+call `my_procedure`('a', 'b', now());
 ```
 
 ## Выборка
@@ -88,10 +88,10 @@ call `my_procedure`('a', 'b', c);
 use nazarpunk\Call\Call;
 
 $options = [
-  'format'  => 'escape', // Форматирование переменных/аргументов по умолчанию
-  'type'    => true, // Приведение типов в выборке
-  'null'    => true, // Избавляться от null в выборке
-  'boolean' => true // приводить tinyint(1) к boolean
+  'format'  => 'escape',
+  'type'    => true,
+  'null'    => true, 
+  'boolean' => true
 ]; 
 
 // Параметры по умолчанию
@@ -101,3 +101,11 @@ Call::set_options($options);
 $results = (new Call('my_procedure'))->execute($options);
 ```
 
+`$options`
+
+* `null` - не трогать `null` при приведении типов 
+* * `true` - все `null` значения будут оставлены как есть
+* * `false` - все `null` значения будут преобразованы в значения по умолчанию
+* `boolean` - приводить `tinyint(1)` и `int(1)` к `boolean`
+* * `true` - ко всем `tinyint(1)` и `int(1)` будет применен  : `bool`
+* * `false` - ко всем `tinyint(1)` и `int(1)` будет применен  : `int`
