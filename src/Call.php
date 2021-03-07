@@ -52,13 +52,18 @@ class Call {
 	 */
 	public static function get_connection(string $name): mysqli {
 		if (!array_key_exists($name, static::$connections)) throw new Exception("Undefined connection: $name");
-		if (static::$connections[$name]['connection'] instanceof mysqli) return static::$connections[$name]['connection'];
+		if (static::$connections[$name]['connection'] instanceof mysqli) {
+			mysqli_report(static::$connections[$name]['report']);
+			return static::$connections[$name]['connection'];
+		}
 
 		$options = static::$connections[$name];
 		$mysqli  = new mysqli($options['hostname'], $options['username'], $options['password'], $options['database'], $options['port'], $options['socket']);
 
+		mysqli_report($options['report']);
+
 		if ($mysqli->connect_errno) throw new Exception($mysqli->connect_error);
-		if (!$mysqli->set_charset('utf8mb4')) throw new Exception($mysqli->error);
+		if (!$mysqli->set_charset($options['charset'])) throw new Exception($mysqli->error);
 
 		return static::$connections[$name]['connection'] = $mysqli;
 	}
@@ -153,8 +158,10 @@ class Call {
 	}
 
 	//</editor-fold>
+
 	//<editor-fold desc="result">
-	public static function type($type_id) {
+	/** @noinspection PhpUnusedPrivateMethodInspection */
+	private static function type($type_id) {
 		static $types;
 
 		if (!isset($types)) {
