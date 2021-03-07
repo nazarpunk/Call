@@ -196,8 +196,8 @@ class Call {
 	 */
 	private static function results(mysqli_result $result, array $options): array {
 		$fetch_fields = [];
-		while ($fetch_feild = $result->fetch_field()) {
-			$fetch_fields[$fetch_feild->name] = $fetch_feild;
+		while ($fetch_field = $result->fetch_field()) {
+			$fetch_fields[$fetch_field->name] = $fetch_field;
 		}
 
 		$results = [];
