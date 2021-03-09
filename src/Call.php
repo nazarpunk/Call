@@ -109,12 +109,12 @@ class Call {
 	private array $variable = [];
 
 	/**
-	 * @param string $name
-	 * @param mixed $value
-	 * @param string|null $format
+	 * @param string                $name
+	 * @param array|string|int|null $value
+	 * @param string|null           $format
 	 * @return $this
 	 */
-	public function variable(string $name, $value, string $format = null): Call {
+	public function variable(string $name, array|string|int|null $value, string $format = null): Call {
 		$this->variable[$name] = func_get_args();
 		return $this;
 	}
@@ -123,11 +123,11 @@ class Call {
 
 	//<editor-fold desc="value">
 	/**
-	 * @param mixed $value
-	 * @param string $format
+	 * @param array|string|int|null $value
+	 * @param string                $format
 	 * @return string
 	 */
-	private function value($value, string $format): string {
+	private function value(array|string|int|null $value, string $format): string {
 		if (is_null($value)) return 'null';
 		if (is_bool($value) || is_int($value)) return (int)$value;
 		if (is_array($value)) return "'" . $this->mysqli->real_escape_string(json_encode($value)) . "'";
@@ -147,12 +147,12 @@ class Call {
 	private array $argument = [];
 
 	/**
-	 * @param int $index
-	 * @param mixed $value
-	 * @param string|null $format
+	 * @param int                   $index
+	 * @param array|string|int|null $value
+	 * @param string|null           $format
 	 * @return $this
 	 */
-	public function argument(int $index, $value, string $format = null): Call {
+	public function argument(int $index, array|string|int|null $value, string $format = null): Call {
 		$this->argument[$index] = func_get_args();
 		return $this;
 	}
@@ -190,7 +190,7 @@ class Call {
 
 	/**
 	 * @param mysqli_result $result
-	 * @param array $options
+	 * @param array         $options
 	 * @return array
 	 * @throws Exception
 	 */
