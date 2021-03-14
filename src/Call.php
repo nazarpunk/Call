@@ -227,7 +227,7 @@ class Call {
 				} else {
 					switch ($field->type) {
 						case MYSQLI_TYPE_JSON:
-							$value = $value ? json_decode($value, JSON_OBJECT_AS_ARRAY) : [];
+							$value = $value ? json_decode(json: $value, associative: true, flags: JSON_OBJECT_AS_ARRAY) : [];
 							break;
 						case MYSQLI_TYPE_FLOAT:
 						case MYSQLI_TYPE_DOUBLE:
@@ -288,11 +288,11 @@ class Call {
 
 		// options
 		$options = array_replace_recursive(static::$options, [
-				'format'    => $format
-				, 'type'    => $type
-				, 'null'    => $null
-				, 'boolean' => $bool
-			]);
+			'format'    => $format
+			, 'type'    => $type
+			, 'null'    => $null
+			, 'boolean' => $bool
+		]);
 		if (is_null($options)) throw new Exception('Wrong Call Argument');
 
 		// variable
