@@ -1,4 +1,5 @@
 <?php /** @noinspection PhpUnused */
+declare(strict_types=1);
 
 namespace nazarpunk\Call;
 
@@ -8,7 +9,9 @@ use DateTime;
 use Exception;
 
 class Call {
-	private mysqli $mysqli;
+	private mysqli        $mysqli;
+	private string        $connection;
+	private static string $connection_default;
 
 	public function __construct(string $procedure) {
 		$this->connection = static::$connection_default;
@@ -18,28 +21,34 @@ class Call {
 	//<editor-fold desc="connection">
 	private static array $connections = [];
 
-	public static function set_connection(array $options) {
-		$options = array_replace_recursive(
-			[
-				'name'     => 'main',
-				'hostname' => null,
-				'username' => null,
-				'password' => null,
-				'database' => null,
-				'port'     => null,
-				'socket'   => null,
-				'charset'  => 'utf8mb4',
-				'report'   => MYSQLI_REPORT_OFF
-			], $options);
-
-		$options['connection'] = null;
-
-		self::$connection_default            ??= $options['name'];
-		self::$connections[$options['name']] = $options;
+	public static function set_connection(
+		string $name = 'main'
+		, string $hostname = 'localhost'
+		, string $username = 'root'
+		, string $password = null
+		, string $database = null
+		, string $port = null
+		, string $socket = null
+		, string $charset = 'utf8mb4'
+		, int $report = MYSQLI_REPORT_OFF
+	) {
+		self::$connection_default ??= $name;
+		self::$connections[$name] = [
+			// class
+			'name'       => $name,
+			'connection' => null,
+			// connection
+			'hostname'   => $hostname,
+			'username'   => $username,
+			'password'   => $password,
+			'database'   => $database,
+			'port'       => $port,
+			'socket'     => $socket,
+			// connection param
+			'charset'    => $charset,
+			'report'     => $report
+		];
 	}
-
-	private string        $connection;
-	private static string $connection_default;
 
 	public static function use_connection(string $name) {
 		self::$connection_default = $name;
@@ -87,8 +96,28 @@ class Call {
 		'boolean' => true
 	];
 
-	public static function set_options(array $options) {
-		static::$options = array_replace_recursive(static::$options, $options) ?? static::$options;
+	/**
+	 * @param string $format
+	 * @param bool   $type
+	 * @param bool   $null
+	 * @param bool   $bool
+	 * @throws Exception
+	 */
+	public static function set_options(
+		string $format = 'escape'
+		, bool $type = true
+		, bool $null = true
+		, bool $bool = true
+	) {
+		$options = array_replace_recursive(static::$options, [
+			'format'    => $format
+			, 'type'    => $type
+			, 'null'    => $null
+			, 'boolean' => $bool
+		]);
+		if (is_null($options)) throw new Exception('Wrong Call options');
+
+		static::$options = $options;
 	}
 	//</editor-fold>
 
@@ -109,12 +138,12 @@ class Call {
 	private array $variable = [];
 
 	/**
-	 * @param string                $name
-	 * @param array|string|int|null $value
-	 * @param string|null           $format
+	 * @param string      $name
+	 * @param mixed       $value
+	 * @param string|null $format
 	 * @return $this
 	 */
-	public function variable(string $name, array|string|int|null $value, string $format = null): Call {
+	public function variable(string $name, mixed $value, string $format = null): Call {
 		$this->variable[$name] = func_get_args();
 		return $this;
 	}
@@ -123,13 +152,13 @@ class Call {
 
 	//<editor-fold desc="value">
 	/**
-	 * @param array|string|int|null $value
-	 * @param string                $format
+	 * @param mixed  $value
+	 * @param string $format
 	 * @return string
 	 */
-	private function value(array|string|int|null $value, string $format): string {
+	private function value(mixed $value, string $format): string {
 		if (is_null($value)) return 'null';
-		if (is_bool($value) || is_int($value)) return (int)$value;
+		if (is_bool($value) || is_int($value)) return strval(intval($value));
 		if (is_array($value)) return "'" . $this->mysqli->real_escape_string(json_encode($value)) . "'";
 		switch ($format) {
 			case 'raw':
@@ -147,47 +176,18 @@ class Call {
 	private array $argument = [];
 
 	/**
-	 * @param int                   $index
-	 * @param array|string|int|null $value
-	 * @param string|null           $format
+	 * @param int         $index
+	 * @param mixed       $value
+	 * @param string|null $format
 	 * @return $this
 	 */
-	public function argument(int $index, array|string|int|null $value, string $format = null): Call {
+	public function argument(int $index, mixed $value, string $format = null): Call {
 		$this->argument[$index] = func_get_args();
 		return $this;
 	}
-
 	//</editor-fold>
 
 	//<editor-fold desc="result">
-	/** @noinspection PhpUnusedPrivateMethodInspection */
-	private static function type($type_id) {
-		static $types;
-
-		if (!isset($types)) {
-			$types     = [];
-			$constants = get_defined_constants(true);
-			foreach ($constants['mysqli'] as $c => $n) if (preg_match('/^MYSQLI_TYPE_(.*)/', $c, $m)) $types[$n] = $m[1];
-		}
-
-		return array_key_exists($type_id, $types) ? $types[$type_id] : null;
-	}
-
-	/** @noinspection PhpUnusedPrivateMethodInspection */
-	private static function flags($flags_num): string {
-		static $flags;
-
-		if (!isset($flags)) {
-			$flags     = [];
-			$constants = get_defined_constants(true);
-			foreach ($constants['mysqli'] as $c => $n) if (preg_match('/MYSQLI_(.*)_FLAG$/', $c, $m)) if (!array_key_exists($n, $flags)) $flags[$n] = $m[1];
-		}
-
-		$result = [];
-		foreach ($flags as $n => $t) if ($flags_num & $n) $result[] = $t;
-		return implode(' ', $result);
-	}
-
 	/**
 	 * @param mysqli_result $result
 	 * @param array         $options
@@ -271,27 +271,41 @@ class Call {
 
 	//<editor-fold desc="execute">
 	/**
-	 * @param array $options
+	 * @param string $format
+	 * @param bool   $type
+	 * @param bool   $null
+	 * @param bool   $bool
 	 * @return array
 	 * @throws Exception
 	 */
-	public function execute(array $options = []): array {
+	public function execute(
+		string $format = 'escape'
+		, bool $type = true
+		, bool $null = true
+		, bool $bool = true
+	): array {
 		$this->mysqli = static::get_connection($this->connection);
 
 		// options
-		$options = array_replace_recursive(static::$options, $options);
+		$options = array_replace_recursive(static::$options, [
+				'format'    => $format
+				, 'type'    => $type
+				, 'null'    => $null
+				, 'boolean' => $bool
+			]);
+		if (is_null($options)) throw new Exception('Wrong Call Argument');
 
 		// variable
 		$variable = [];
-		if (count($this->variable) > 0) {
+		if (count($this->variable)) {
 			foreach ($this->variable as $k => $v) {
-				$variable[] = "set @$k := " . static::value($v[1], $v[2] ?? $options['format']) . ";";
+				$variable[] = "set @$k := " . static::value($v[1], $v[2] ?? $options['format']) . ';';
 			}
 		}
 
 		// argument
 		$argument = [];
-		if (count($this->argument) > 0) {
+		if (count($this->argument)) {
 			for ($i = max(array_keys($this->argument)); $i >= 1; $i--) {
 				if (!array_key_exists($i, $this->argument)) $this->argument[$i] = [$i, 'null', 'raw'];
 			}
@@ -302,7 +316,7 @@ class Call {
 		}
 
 		// result
-		$query = implode('', $variable) . "call `{$this->procedure}` (" . implode(',', $argument) . ");";
+		$query = implode('', $variable) . "call `{$this->procedure}` (" . implode(',', $argument) . ');';
 
 		$this->mysqli->multi_query($query);
 		$results = [];
