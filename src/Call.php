@@ -37,13 +37,14 @@ class Call {
 			// class
 			'name'       => $name,
 			'connection' => null,
-			// connection
-			'hostname'   => $hostname,
-			'username'   => $username,
-			'password'   => $password,
-			'database'   => $database,
-			'port'       => $port,
-			'socket'     => $socket,
+			'param'      => [
+				'hostname' => $hostname,
+				'username' => $username,
+				'password' => $password,
+				'database' => $database,
+				'port'     => $port,
+				'socket'   => $socket
+			],
 			// connection param
 			'charset'    => $charset,
 			'report'     => $report
@@ -67,7 +68,7 @@ class Call {
 		}
 
 		$options = static::$connections[$name];
-		$mysqli  = new mysqli($options['hostname'], $options['username'], $options['password'], $options['database'], $options['port'], $options['socket']);
+		$mysqli  = new mysqli(...$options['param']);
 
 		mysqli_report($options['report']);
 
