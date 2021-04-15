@@ -13,7 +13,8 @@ class Call {
 	private string        $connection;
 	private static string $connection_default;
 
-	private string $use = '';
+	private string $use_before = '';
+	private string $use_after  = '';
 
 	public function __construct(string $procedure) {
 		$this->connection = static::$connection_default;
@@ -21,8 +22,9 @@ class Call {
 	}
 
 	//<editor-fold desc="use">
-	public function use(string $database): Call {
-		$this->use = $database;
+	public function use(string $database, string $restore = ''): Call {
+		$this->use_before = $database;
+		$this->use_after  = $restore;
 		return $this;
 	}
 	//</editor-fold>
@@ -325,10 +327,11 @@ class Call {
 		}
 
 		// use
-		$use = strlen($this->use) ? "use `$this->use`;" : '';
+		$use_before = strlen($this->use_before) ? "use `$this->use_before`;" : '';
+		$use_after  = strlen($this->use_after) ? "use `$this->use_after`;" : '';
 
 		// result
-		$query = $use . implode('', $variable) . "call `$this->procedure` (" . implode(',', $argument) . ');';
+		$query = $use_before . implode('', $variable) . "call `$this->procedure` (" . implode(',', $argument) . ');' . $use_after;
 
 		$this->mysqli->multi_query($query);
 		$results = [];
