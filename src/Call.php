@@ -13,10 +13,19 @@ class Call {
 	private string        $connection;
 	private static string $connection_default;
 
+	private string $use;
+
 	public function __construct(string $procedure) {
 		$this->connection = static::$connection_default;
 		$this->procedure  = $procedure;
 	}
+
+	//<editor-fold desc="use">
+	public function use(string $database): Call {
+		$this->use = $database;
+		return $this;
+	}
+	//</editor-fold>
 
 	//<editor-fold desc="connection">
 	private static array $connections = [];
@@ -87,7 +96,6 @@ class Call {
 		return $this;
 	}
 	//</editor-fold>
-
 
 	//<editor-fold desc="options">
 	private static array $options = [
@@ -311,13 +319,16 @@ class Call {
 				if (!array_key_exists($i, $this->argument)) $this->argument[$i] = [$i, 'null', 'raw'];
 			}
 			ksort($this->argument, SORT_NUMERIC);
-			foreach ($this->argument as $k => $v) {
+			foreach ($this->argument as $v) {
 				$argument[] = static::value($v[1], $v[2] ?? $options['format']);
 			}
 		}
 
+		// use
+		$use = $this->use ? "use `$this->use`;" : '';
+
 		// result
-		$query = implode('', $variable) . "call `{$this->procedure}` (" . implode(',', $argument) . ');';
+		$query = $use . implode('', $variable) . "call `$this->procedure` (" . implode(',', $argument) . ');';
 
 		$this->mysqli->multi_query($query);
 		$results = [];
