@@ -13,7 +13,7 @@ class Call {
 	private string        $connection;
 	private static string $connection_default;
 
-	private string $use;
+	private string $use = '';
 
 	public function __construct(string $procedure) {
 		$this->connection = static::$connection_default;
@@ -325,7 +325,7 @@ class Call {
 		}
 
 		// use
-		$use = $this->use ? "use `$this->use`;" : '';
+		$use = strlen($this->use) ? "use `$this->use`;" : '';
 
 		// result
 		$query = $use . implode('', $variable) . "call `$this->procedure` (" . implode(',', $argument) . ');';
@@ -340,5 +340,4 @@ class Call {
 		return $results;
 	}
 	//</editor-fold>
-
 }
